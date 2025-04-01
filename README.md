@@ -37,3 +37,5 @@ https://github.com/Charlesops4/python_code/blob/006b77c4e01f342c54f6c71688e5167b
 https://github.com/Charlesops4/python_code/blob/773eca66033897115c39c6e877e86d5e16669909/8_ThreadPool_spider
 
 #9_通用陷阱类型及对抗（Trap_Fight.md）
+
+https://github.com/Charlesops4/python_code/blob/668ae832933f4f90162a7e2443e996b586b0c65a/Trap_Fight.md

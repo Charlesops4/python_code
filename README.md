@@ -35,3 +35,5 @@ https://github.com/Charlesops4/python_code/blob/006b77c4e01f342c54f6c71688e5167b
 #8_多线程爬虫示例（ThreadPool_spider）
 
 https://github.com/Charlesops4/python_code/blob/773eca66033897115c39c6e877e86d5e16669909/8_ThreadPool_spider
+
+#9_通用陷阱类型及对抗（Trap_Fight.md）

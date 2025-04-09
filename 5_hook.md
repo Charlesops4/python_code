@@ -44,56 +44,115 @@ Object.defineProperty(document, 'cookie', {
 
 //3.浏览器调试时候，跳过debugger的hook【涉及哪个用哪个】
 
+#通用跳过debugger
+
+## 1. 禁用 debugger 语句
+
+```javascript
+// 重写 debugger 语句使其无效
+var _debugger = window.debugger;
+window.debugger = function(){};
+```
+
+## 2. Hook console.debug 方法
+
+```javascript
+// 禁用所有 console.debug 输出
+console.debug = function(){};
+```
+
+## 3. 禁用开发者工具检测
+
+许多网站会检测开发者工具是否打开：
+
+```javascript
+// 禁用常见的开发者工具检测
+Object.defineProperty(window, 'devtools', { get: () => false });
+Object.defineProperty(window, 'webkitStorageInfo', { get: () => false });
+Object.defineProperty(window, 'ondevtoolschange', { get: () => false });
+```
+
+## 4. 重写 Date 和 performance 方法
+
+一些反调试会使用时间差检测：
+
+```javascript
+// 保持时间一致防止检测
+const _Date = Date;
+Date = function() {
+  return new _Date(0); // 返回固定时间
+};
+Date.now = () => 0;
+performance.now = () => 0;
+```
+
+## 5. 禁用断点调试检测
+
+```javascript
+// 防止通过 Function.toString 检测
+Function.prototype.toString = function() {
+  return "function() { [native code] }";
+};
+
+// 禁用 debugger 功能
+Object.defineProperty(window, 'Debugger', { get: () => {} });
+```
+
+## 6. 完整的反反调试脚本
+
+```javascript
 (function() {
-    'use strict';
-    
-    // 禁用debugger语句
-    Function.prototype.constructor = function(a) {
-        if (a && a.toLowerCase().includes('debugger')) {
-            return function(){};
-        }
-        return Function.apply(this, arguments);
-    };
-    
-    // 禁用console检测
-    Object.defineProperty(window, 'console', {
-        value: new Proxy(console, {
-            get: function(target, prop) {
-                if (['log', 'warn', 'error', 'debug'].includes(prop)) {
-                    return function() {
-                        // 过滤掉检测代码
-                        if (!arguments[0] || !arguments[0].toString().includes('DevTools')) {
-                            target[prop].apply(target, arguments);
-                        }
-                    };
-                }
-                return target[prop];
-            }
-        }),
-        configurable: false,
-        writable: false
-    });
-    
-    // 禁用定时器检测
-    window._setInterval = window.setInterval;
-    window.setInterval = function(cb, time) {
-        if (typeof cb === 'string' && cb.includes('debugger')) {
-            return 0;
-        }
-        return window._setInterval(cb, time);
-    };
-    
-    // 禁用DevTools窗口大小检测
-    Object.defineProperty(window, 'outerWidth', {
-        get: function() { return 1200; },
-        configurable: false
-    });
-    
-    // 禁用Function.toString检测
-    Function.prototype.toString = function() {
-        return "function() { [native code] }";
-    };
+  'use strict';
+  
+  // 1. 禁用 debugger 语句
+  window.debugger = function(){};
+  
+  // 2. 禁用 console 调试方法
+  console.debug = function(){};
+  console.log = function(){};
+  console.warn = function(){};
+  console.error = function(){};
+  
+  // 3. 禁用开发者工具检测
+  Object.defineProperty(window, 'devtools', { get: () => false });
+  Object.defineProperty(window, 'webkitStorageInfo', { get: () => false });
+  Object.defineProperty(window, 'ondevtoolschange', { get: () => false });
+  
+  // 4. 固定时间相关方法
+  const _Date = Date;
+  Date = function() { return new _Date(0); };
+  Date.now = () => 0;
+  performance.now = () => 0;
+  
+  // 5. 防止函数检测
+  Function.prototype.toString = function() {
+    return "function() { [native code] }";
+  };
+  
+  // 6. 禁用其他常见检测方式
+  Object.defineProperty(document, 'hidden', { get: () => true });
+  Object.defineProperty(document, 'visibilityState', { get: () => 'visible' });
+  
+  console.log('所有调试检测已被禁用');
 })();
+```
+
+## 7. 使用 Chrome 扩展注入
+
+创建一个 Chrome 扩展的 content script 来注入这些 hook：
+
+```json
+// manifest.json
+{
+  "name": "Anti Debugger Detection",
+  "version": "1.0",
+  "content_scripts": [{
+    "matches": ["<all_urls>"],
+    "js": ["antidebug.js"],
+    "run_at": "document_start"
+  }]
+}
+```
 
 
 
